@@ -27,6 +27,11 @@ Keluarga* buatKeluarga(char* nama, char gender, char status);
 	FS : Mengalokasikan memori untuk keluarga yang akan ditampung sebagai tree keluarga
 */
 
+Pasangan* cariPasangan(Pasangan* pasangan, char* nama);
+/* IS : Pointer pasangan masih tidak diketahui kosong atau tidak
+	FS : Pointer pasangan menuju nama yang dicari dan diketuhui nodenya ada dimana
+*/
+
 Keluarga* cariKeluarga(Keluarga* keluarga, char* nama);
 /* IS : Pointer keluarga masih di root dan tidak diketahui keluarga nya kosong atau tidak
 	FS : Pointer keluarga menuju nama yang dicari dan diketuhui nodenya ada dimana
@@ -50,6 +55,11 @@ void tambahAnggotaKeluarga(Keluarga** root);
 void updateStatus(Keluarga* root);
 /* IS : Status awal diinisialisasikan sebagai hidup
 	FS : Status akhir menjadi meninggal
+*/
+
+void cekRole(Keluarga* keluarga, Keluarga* ancestor, char* nama, char* role);
+/* IS : tidak diketahui apa kedudukan anggota tersebut di keluarga
+	FS : Menghasilkan pesan kedudukan anggota keluarga
 */
 
 void cekAnggotaKeluarga(Keluarga* root);
