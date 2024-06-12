@@ -67,6 +67,4 @@ void tampilkanPohonKeluarga(Keluarga* keluarga, int level);
 	FS : Menampilkan pohon keluarga secara level-order
 */
 
-int inputAngka(char* prompt);
-
 #endif 

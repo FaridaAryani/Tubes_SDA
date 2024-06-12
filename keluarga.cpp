@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 Keluarga* buatKeluarga(char* nama, char gender, char status) {
     Keluarga* keluargaBaru = (Keluarga*)malloc(sizeof(Keluarga));
@@ -15,16 +14,6 @@ Keluarga* buatKeluarga(char* nama, char gender, char status) {
     keluargaBaru->fs = NULL;
     keluargaBaru->pr = NULL;
     return keluargaBaru;
-}
-
-Pasangan* buatPasangan(char* nama, char gender, char status, Keluarga* cp) {
-    Pasangan* pasanganBaru = (Pasangan*)malloc(sizeof(Pasangan));
-    strcpy(pasanganBaru->nama, nama);
-    pasanganBaru->gender = gender;
-    pasanganBaru->status = status;
-    pasanganBaru->cp = cp;
-    pasanganBaru->next = NULL;
-    return pasanganBaru;
 }
 
 Pasangan* cariPasangan(Pasangan* pasangan, char* nama) {
@@ -49,7 +38,7 @@ Keluarga* cariKeluarga(Keluarga* keluarga, char* nama) {
 
     Pasangan* pasangan = cariPasangan(keluarga->pasangan, nama);
     if (pasangan != NULL) {
-        return keluarga;
+        return (Keluarga*)pasangan;
     }
     
     Keluarga* result = cariKeluarga(keluarga->fs, nama);
@@ -103,12 +92,12 @@ void tambahPasangan(Keluarga* keluarga, char* nama, char gender, char status) {
     strcpy(pasanganBaru->nama, nama);
     pasanganBaru->gender = gender;
     pasanganBaru->status = status;
+    strcpy(pasanganBaru->infoNikah, "Menikah");
+    keluarga->pasangan = pasanganBaru;
     pasanganBaru->cp = keluarga;
     pasanganBaru->next = NULL;  // Inisialisasi next ke NULL
-
-    keluarga->pasangan = pasanganBaru;
+    
     strcpy(keluarga->infoNikah, "Menikah");
-    printf("Menambahkan pasangan %s untuk %s\n", nama, keluarga->nama);  // Debugging
 }
 
 
@@ -182,16 +171,8 @@ void updateStatus(Keluarga* root) {
     if (keluarga->status == 'M' || keluarga->status == 'm') {
         printf("%s memang sudah terdata meninggal.\n", nama);
     } else {
-        if (strcmp(keluarga->nama, nama) == 0) {
-            keluarga->status = 'M';
-            printf("Status anggota keluarga berhasil diupdate menjadi meninggal!\n");
-        } else {
-            Pasangan* pasangan = cariPasangan(keluarga->pasangan, nama);
-            if (pasangan != NULL) {
-                pasangan->status = 'M';
-                printf("Status pasangan berhasil diupdate menjadi meninggal!\n");
-            }
-        }
+        keluarga->status = 'M';
+        printf("Status anggota keluarga berhasil diupdate menjadi meninggal!\n");
     }
 }
 
@@ -226,12 +207,6 @@ void cekRole(Keluarga* keluarga, Keluarga* ancestor, char* nama, char* role) {
             return;
         }
 
-//        // Periksa keturunan lebih lanjut secara rekursif
-//        cekRole(keluarga, temp, nama, role);
-//        if (strcmp(role, "Tidak ditemukan") != 0) {
-//            return;
-//        }
-
         temp = temp->nb;
     }
     
@@ -247,13 +222,6 @@ void cekRole(Keluarga* keluarga, Keluarga* ancestor, char* nama, char* role) {
             strcpy(role, (tem->gender == 'L' || tem->gender == 'l') ? "Istri Cucu" : "Suami Cucu");
             return;
         }
-
-//        // Periksa keturunan lebih lanjut secara rekursif
-//        cekRole(keluarga, temp, nama, role);
-//        if (strcmp(role, "Tidak ditemukan") != 0) {
-//            return;
-//        }
-
         temp = temp->nb;
     }
     
@@ -269,12 +237,6 @@ void cekRole(Keluarga* keluarga, Keluarga* ancestor, char* nama, char* role) {
             strcpy(role, (buyut->gender == 'L' || buyut->gender == 'l') ? "Istri Anak" : "Suami Anak");
             return;
         }
-
-//        // Periksa keturunan lebih lanjut secara rekursif
-//        cekRole(keluarga, temp, nama, role);
-//        if (strcmp(role, "Tidak ditemukan") != 0) {
-//            return;
-//        }
 
         buyut = buyut->nb;
     }
@@ -303,8 +265,12 @@ void cekAnggotaKeluarga(Keluarga* root) {
 void infoKeluarga(Keluarga* root) {
     char nama[50];
     printf("Masukkan nama anggota keluarga: ");
-    scanf(" %49[^\n]", nama);
     getchar();
+    fgets(nama, sizeof(nama), stdin);
+    size_t length = strlen(nama);
+    if (length > 0 && nama[length - 1] == '\n') {
+        nama[length - 1] = '\0';
+    }
 
     Keluarga* keluarga = cariKeluarga(root, nama);
     if (keluarga != NULL) {
@@ -316,43 +282,12 @@ void infoKeluarga(Keluarga* root) {
         cekRole(root, root, nama, role);
         printf("Sebagai: %s dari keluarga %s.\n", role, root->nama);
 
-        if (keluarga->pasangan != NULL) {
-            Pasangan* pasangan = cariPasangan(keluarga->pasangan, nama);
-            if (pasangan != NULL) {
-                printf("Nama Pasangan: %s\n", pasangan->nama);
-                printf("Jenis Kelamin Pasangan: %s\n", (pasangan->gender == 'L' || pasangan->gender == 'l') ? "Laki-laki" : "Perempuan");
-                printf("Status Pasangan: %s\n", (pasangan->status == 'H' || pasangan->status == 'h') ? "Hidup" : "Meninggal");
-                printf("Status Pernikahan: %s\n", keluarga->pasangan->infoNikah);
-            }
+        if (keluarga->pasangan) {
+            printf("Status Pernikahan: %s\n", keluarga->infoNikah);
         } else {
             printf("Status Pernikahan: Belum Menikah\n");
         }
     } else {
-        // Jika yang dicari adalah pasangan, periksa setiap node untuk menemukan pasangan
-        Keluarga* current = root;
-        while (current != NULL) {
-            Pasangan* pasangan = cariPasangan(current->pasangan, nama);
-            if (pasangan != NULL) {
-                printf("Nama Pasangan: %s\n", pasangan->nama);
-                printf("Jenis Kelamin Pasangan: %s\n", (pasangan->gender == 'L' || pasangan->gender == 'l') ? "Laki-laki" : "Perempuan");
-                printf("Status Pasangan: %s\n", (pasangan->status == 'H' || pasangan->status == 'h') ? "Hidup" : "Meninggal");
-                printf("Status Pernikahan: %s\n", keluarga->pasangan->infoNikah);
-
-                char role[50];
-                cekRole(root, root, pasangan->nama, role);
-                printf("Sebagai: %s dari %s.\n", role, root->nama);
-                return;
-            }
-
-            if (current->fs != NULL) {
-                current = current->fs;
-            } else if (current->nb != NULL) {
-                current = current->nb;
-            } else {
-                break;
-            }
-        }
-
         printf("Anggota keluarga tidak ditemukan!\n");
     }
 }
@@ -381,30 +316,5 @@ void tampilkanPohonKeluarga(Keluarga* keluarga, int level) {
 
     if (keluarga->nb != NULL) {
         tampilkanPohonKeluarga(keluarga->nb, level);
-    }
-}
-
-int inputAngka(char* prompt) {
-    char buffer[100];
-    int angka;
-    while (1) {
-        printf("%s", prompt);
-        if (fgets(buffer, sizeof(buffer), stdin) != NULL) {
-            int valid = 1;
-            // Hapus newline character di akhir input
-            buffer[strcspn(buffer, "\n")] = 0;
-            for (int i = 0; i < strlen(buffer); i++) {
-                if (!isdigit(buffer[i])) {
-                    valid = 0;
-                    break;
-                }
-            }
-            if (valid) {
-                angka = atoi(buffer); // Konversi string ke integer
-                return angka;
-            } else {
-                printf("Input harus berupa angka. Silakan coba lagi.\n");
-            }
-        }
     }
 }

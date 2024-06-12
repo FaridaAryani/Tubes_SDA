@@ -1,8 +1,6 @@
 #include "keluarga.h"
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdlib>
 
 int main() {
     Keluarga* root = NULL;    // Root awalnya kosong
@@ -16,7 +14,8 @@ int main() {
         printf("| 4. Info keluarga\n");
         printf("| 5. Tampilkan pohon keluarga\n");
         printf("| 6. Keluar\n");
-        pil = inputAngka("Masukkan pilihan: ");
+        printf("Masukkan pilihan: ");
+        scanf("%d", &pil);
         system("cls");
        
         switch (pil) {
